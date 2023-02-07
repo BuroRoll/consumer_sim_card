@@ -1,0 +1,7 @@
+services:
+   app:
+     image: {{ index .Values.werf.image .Release.Name }}
+     container_name: {{ .Release.Name }}
+     ports:
+       - 8004:8004
+       - 7004:7004

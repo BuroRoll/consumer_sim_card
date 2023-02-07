@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: {{ .Release.Name }}    
+spec:
+  rules:
+  - host: {{ .Release.Name }}{{pluck $.Values.global.env .Values.domain | first | default .Values.domain._default}}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: {{pluck $.Values.global.env .Values.envs.WEB_PORT | first | default .Values.envs.WEB_PORT._default}}
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: {{pluck $.Values.global.env .Values.envs.PROMETHEUS_PORT | first | default .Values.envs.PROMETHEUS_PORT._default}}

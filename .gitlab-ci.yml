@@ -1,0 +1,59 @@
+variables:
+  REGISTRY: harbor.corp.motiv/ntd
+
+stages:
+  - build
+  - deploy
+  - dismiss
+  - cleanup
+
+Build and Publish:
+  stage: build
+  script:
+    - type multiwerf && . $(multiwerf use 1.2 ea --as-file)
+    - type werf && source $(werf ci-env gitlab --as-file)
+    - export DOCKER_CONFIG=$(mktemp -d)
+    - docker login -u ${HARBOR_USER} -p ${HARBOR_PASSWORD} ${REGISTRY}
+    - werf build --repo="${REGISTRY}/${CI_PROJECT_NAME}"
+  except: [ schedules ]
+  tags: [ runner ]
+
+.base_deploy: &base_deploy
+  stage: deploy
+  script:
+    - type multiwerf && . $(multiwerf use 1.2 ea --as-file)
+    - type werf && source $(werf ci-env gitlab --as-file)
+    - export DOCKER_CONFIG=$(mktemp -d)
+    - docker login -u ${HARBOR_USER} -p ${HARBOR_PASSWORD} ${REGISTRY}
+    - export WERF_KUBE_CONFIG_BASE64=${KUBE_CONFIG}
+    - werf converge --skip-build --repo="${REGISTRY}/${CI_PROJECT_NAME}" --set "global.env_url=$(echo ${CI_ENVIRONMENT_URL} | cut -d / -f 3)"
+  dependencies:
+    - Build and Publish
+  tags: [ runner ]
+
+Deploy to Staging:
+  <<: *base_deploy
+  variables:
+    KUBE_CONFIG: ${KUBE_CONFIG_STAG}
+  environment:
+    name: staging
+
+Deploy to Production:
+  <<: *base_deploy
+  variables:
+    KUBE_CONFIG: ${KUBE_CONFIG_PROD}
+  environment:
+    name: production
+  only: [ main ]
+  when: manual
+
+Cleanup:
+  stage: cleanup
+  script:
+    - type multiwerf && . $(multiwerf use 1.2 ea --as-file)
+    - type werf && source $(werf ci-env gitlab --as-file)
+    - export DOCKER_CONFIG=$(mktemp -d)
+    - docker login -u ${HARBOR_USER} -p ${HARBOR_PASSWORD} ${REGISTRY}
+    - werf cleanup --repo="${REGISTRY}/${CI_PROJECT_NAME}"
+  only: [ schedules ]
+  tags: [ runner ]

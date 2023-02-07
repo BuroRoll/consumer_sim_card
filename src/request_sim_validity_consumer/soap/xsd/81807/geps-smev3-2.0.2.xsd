@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:directive="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/directive/1.3"
+			xmlns:geps="http://epgu.gosuslugi.ru/geps/2.0.2"
+            targetNamespace="http://epgu.gosuslugi.ru/geps/2.0.2"
+            elementFormDefault="qualified">
+    <xsd:import namespace="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/directive/1.3" schemaLocation="smev-message-exchange-directive-1.3.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>-------------------------------------------------Обязательные элементы схемы ВС-------------------------------------------------</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="Request" type="geps:Request">
+		<xsd:annotation>
+			<xsd:documentation>Запрос. Реестровый тип данных (для директивных ВВС)</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="Response" type="geps:Response">
+		<xsd:annotation>
+			<xsd:documentation>Запрос. Реестровый тип данных (для директивных ВВС)</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="Request">
+		<xsd:sequence>
+			<xsd:element name="GeneralData" type="geps:GeneralDataRequest">
+				<xsd:annotation>
+					<xsd:documentation>Общий блок реестрового запроса</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="directive:Registry"/>
+		</xsd:sequence>
+		<xsd:attribute name="ID" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>Вспомогательный ID запроса. Не использовать при отправке сообщений на реальных пользователей</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="Response">
+		<xsd:sequence>
+			<xsd:element name="GeneralData" type="geps:GeneralDataResponse" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Общий блок реестрового ответа</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="directive:Registry"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:annotation>
+		<xsd:documentation>-------------------------------------------------Бизнес данные-------------------------------------------------</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="GetSendMessageRequest" type="geps:getSendMessageRequest">
+		<xsd:annotation>
+			<xsd:documentation>Запрос передачи сообщения между ФОИВ и ГЭПС</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="GetNotificationResponse" type="geps:getNotificationResponse">
+		<xsd:annotation>
+			<xsd:documentation>Результат передачи сообщения между ФОИВ и ГЭПС</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="EsiaUserIdType">
+		<xsd:annotation>
+			<xsd:documentation>ID пользователя ЕСИА</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="SNILSType">
+		<xsd:annotation>
+			<xsd:documentation>СНИЛС</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="11"/>
+			<xsd:pattern value="\d{11}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="PhysicalPersonINNType">
+		<xsd:annotation>
+			<xsd:documentation>ИНН физического лица / ИП</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="INN" type="geps:PhysicalPersonINNValueType">
+				<xsd:annotation>
+					<xsd:documentation>Значение ИНН</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="INNAttr" type="geps:INNType">
+				<xsd:annotation>
+					<xsd:documentation>Тип ИНН: ФЛ, ИП</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="NameAddressType">
+		<xsd:annotation>
+			<xsd:documentation>Почтовая отправка на физических (подтвержденных) и юридических лиц</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UserType" type="geps:UserTypeType">
+				<xsd:annotation>
+					<xsd:documentation>Тип пользователя: физическое или юридическое лицо</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Address" type="geps:AddressType">
+				<xsd:annotation>
+					<xsd:documentation>Почтовый адрес физического или юридического лица</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="string100Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string36Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="36"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string4000Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="4000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="UserTypeType">
+		<xsd:annotation>
+			<xsd:documentation>Тип пользователя</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="PhysicalPerson" type="geps:PhysicalPersonType">
+				<xsd:annotation>
+					<xsd:documentation>Физическое лицо или индивидуальный предприниматель</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="LegalPerson" type="geps:LegalPersonType">
+				<xsd:annotation>
+					<xsd:documentation>Юридическое лицо</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="PhysicalPersonType">
+		<xsd:annotation>
+			<xsd:documentation>ФИО физического лица</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="LastName" type="geps:string100Type" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Фамилия</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="FirstName" type="geps:string100Type" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Имя</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MiddleName" type="geps:string100Type" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Отчество</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SolePerson" type="xsd:boolean" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Признак индивидуального предпринимателя</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="LegalPersonType">
+		<xsd:annotation>
+			<xsd:documentation>Наименование юридического лица</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="geps:string4000Type" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Наименование юридического лица</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="AddressType">
+		<xsd:annotation>
+			<xsd:documentation>Почтовый/юридический адрес физического/юридического лица</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="AddressStr" type="xsd:string" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Адрес строкой</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Flat" type="xsd:string" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Номер квартиры (офиса, помещения и т.п.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>	
+			<xsd:element name="FiasAddress" type="geps:string36Type" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>ФИАС-код адреса</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="PhysicalPersonINNValueType">
+		<xsd:annotation>
+			<xsd:documentation>Значение ИНН физического лица / ИП</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="12"/>
+			<xsd:pattern value="\d{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="INNType">
+		<xsd:annotation>
+			<xsd:documentation>Тип ИНН</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="PP">
+				<xsd:annotation>
+					<xsd:documentation>ИНН физического лица</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SP">
+				<xsd:annotation>
+					<xsd:documentation>ИНН индивидуального предпринимателя</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="PersonDocumentType">
+		<xsd:annotation>
+			<xsd:documentation>Документ пользователя</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DocSeries">
+				<xsd:annotation>
+					<xsd:documentation>Серия документа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="DocNumber">
+				<xsd:annotation>
+					<xsd:documentation>Номер документа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="DocType">
+				<xsd:annotation>
+					<xsd:documentation>Код типа документа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="RF_PASSPORT">
+							<xsd:annotation>
+								<xsd:documentation>Паспорт гражданина РФ</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+						<xsd:enumeration value="FRGN_PASS">
+							<xsd:annotation>
+								<xsd:documentation>Заграничный паспорт гражданина РФ</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ForeignPersonDocumentType">
+		<xsd:annotation>
+			<xsd:documentation>Документ пользователя (ИГ)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DocSeries">
+				<xsd:annotation>
+					<xsd:documentation>Серия документа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string"/>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="DocNumber">
+				<xsd:annotation>
+					<xsd:documentation>Номер документа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="LegalPersonINNType">
+		<xsd:annotation>
+			<xsd:documentation>ИНН юридического лица</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="10"/>
+			<xsd:pattern value="\d{10}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="OGRNCompanyType">
+		<xsd:annotation>
+			<xsd:documentation>ОГРН юридического лица</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="13"/>
+			<xsd:pattern value="[125]{1}\d{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="OGRNSoleProprietorType">
+		<xsd:annotation>
+			<xsd:documentation>ОГРН индивидуального предпринимателя</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="15"/>
+			<xsd:pattern value="[3]{1}\d{14}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="Params">
+		<xsd:sequence>
+			<xsd:element name="Name">
+				<xsd:annotation>
+					<xsd:documentation>Имя атрибута</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="Value" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Значение атрибута</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="StatusCode" final="restriction">
+		<xsd:annotation>
+			<xsd:documentation>Код статуса</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ACCEPT">
+				<xsd:annotation>
+					<xsd:documentation>Статус ACCEPT</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="REJECT">
+				<xsd:annotation>
+					<xsd:documentation>Статус REJECT</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="READ">
+				<xsd:annotation>
+					<xsd:documentation>Статус READ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="RegistrySettings">
+		<xsd:annotation>
+			<xsd:documentation>Параметры реестрового запроса (перииод, неообходимость сбора реестровых ответов)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ReadingNotification" type="xsd:boolean" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Признак необходимости получения уведомлений о прочтении в ФОИВ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PeriodRegistryCollect" type="xsd:duration" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Период времени в течение которого собирается реестр ответа (каждые 2 часа (часы))</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PeriodTimeRegistryCollectValid" type="xsd:duration" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Период времени в течение которого действует сбор реестров ответов (в течение года (дни))</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RegistryReNotice">
+		<xsd:annotation>
+			<xsd:documentation>Параметры отправки повторных уведомлений (количество повторных уведомлений, период повторных уведомлений)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CountReNotice" type="xsd:int" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Количество повторных уведомлений</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PeriodReNotice" type="xsd:duration" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Период повторных уведомлений</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="User">
+		<xsd:annotation>
+			<xsd:documentation>Иденнтификатор Пользователя, кому отправляется сообщение</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="GepsUserId" type="geps:EsiaUserIdType">
+				<xsd:annotation>
+					<xsd:documentation>ЕСИА ID пользователя адресата</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SNILS" type="geps:SNILSType">
+				<xsd:annotation>
+					<xsd:documentation>СНИЛС пользователя адресата</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="INN" type="geps:PhysicalPersonINNType">
+				<xsd:annotation>
+					<xsd:documentation>ИНН пользователя адресата (ФЛ или ИП)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PersonDocument" type="geps:PersonDocumentType">
+				<xsd:annotation>
+					<xsd:documentation>Данные документа получателя сообщения</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ForeignPersonDocument" type="geps:ForeignPersonDocumentType">
+				<xsd:annotation>
+					<xsd:documentation>Данные документа получателя сообщения (ИГ)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="LegalPersonINN" type="geps:LegalPersonINNType">
+				<xsd:annotation>
+					<xsd:documentation>ИНН юридического лица</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="OGRNCompany" type="geps:OGRNCompanyType">
+				<xsd:annotation>
+					<xsd:documentation>ОГРН ЮЛ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="OGRNSoleProprietor" type="geps:OGRNSoleProprietorType">
+				<xsd:annotation>
+					<xsd:documentation>ОГРН ИП</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="NameAddress" type="geps:NameAddressType">
+				<xsd:annotation>
+					<xsd:documentation>ФИО/наименование и адрес пользователя/организации</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="getSendMessageRequest">
+		<xsd:annotation>
+			<xsd:documentation>Блок отправки сообщения ведомством</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="User" type="geps:User" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Иденнтификатор Пользователя, кому отправляется сообщение</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Param" type="geps:Params" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Параметры атрибуты сообщения для рендера по шаблону</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="getNotificationResponse">
+		<xsd:annotation>
+			<xsd:documentation>Блок ответа</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="User" type="geps:User" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Иденнтификатор Пользователя, кому отправляется сообщение</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StatusCode" type="geps:StatusCode">
+				<xsd:annotation>
+					<xsd:documentation>Код ответа</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Code">
+				<xsd:annotation>
+					<xsd:documentation>Расшифровка кода ответа</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="StatusMessage">
+				<xsd:annotation>
+					<xsd:documentation>Сообщение статуса</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string"/>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="DateTime" type="xsd:dateTime" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Дата и время прочтения уведомления</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GeneralDataRequest">
+		<xsd:annotation>
+			<xsd:documentation>Блок общих сведений о реестре</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="FoivId" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Внешний идентификатор ФОИВ</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+						<xsd:maxLength value="20"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="Settings" type="geps:RegistrySettings" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Параметры реестрового запроса (период, неообходимость сбора реестровых ответов)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ReNotice" type="geps:RegistryReNotice" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Параметры отправки повторных уведомлений (количество повторных уведомлений, период повторных уведомлений)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MessageType">
+				<xsd:annotation>
+					<xsd:documentation>Мнемоника шаблона сообщения</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GeneralDataResponse">
+		<xsd:annotation>
+			<xsd:documentation>Блок общих сведений о реестре</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="FoivId" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Внешний идентификатор ФОИВ</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+						<xsd:maxLength value="20"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

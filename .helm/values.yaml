@@ -1,0 +1,55 @@
+envs:
+  WEB_PORT:  # порт используется для healthcheck
+    _default: 8004
+    production: 8004
+  ADAPTER_SMEV_WSDL:
+    _default:   "http://smev-test.corp.motiv:7576/ws/SMEVServiceAdapterService?WSDL"
+    production: "http://smev-prod.corp.motiv:7576/ws/SMEVServiceAdapterService?WSDL"
+  MNEMONIC:
+    _default:   "U131101"
+    production: "U131101"
+  INV_API_CORE_WSDL:
+    _default:   "http://192.168.119.187:8080/inv.motiv.ru/InvApiCore?wsdl"
+    production: "http://192.168.111.27:8080/inv.motiv.ru/InvApiCore?wsdl"
+  SERVICE_NAME:
+    _default:   "request-sim-card-validity-consumer-staging"
+    production: "request-sim-card-validity-consumer-production"
+  KAFKA_BROKER_URL:
+    _default:   "kafka01.corp.motiv:9093;kafka02.corp.motiv:9093;kafka03.corp.motiv:9093"
+    production: "kafka01.corp.motiv:9093;kafka02.corp.motiv:9093;kafka03.corp.motiv:9093"
+  KAFKA_TOPIC_PREFIX:
+    _default: "smev.mvd.staging."
+    production: "smev.mvd.production."
+  PROMETHEUS_PORT: # порт используется для снятия метрик prometheus
+    _default: 7004
+    production: 7004
+  LOGGING_LEVEL:
+    _default: "DEBUG"
+    production: "INFO"
+  SERIALIZE:
+    _default: True
+    production: True
+  ENV:
+    _default: "staging"
+    production: "production"
+domain:
+  _default: ".pacoba.corp.motiv"
+  production: ".gulsun.corp.motiv"
+
+vault:
+  role:
+    _default: "k8s_pacoba_dis_read"
+    production: "k8s_gulsun_dis_read"
+  path:
+    _default: "kv/staging/dis/smev/mvd"
+    production: "kv/production/dis/smev/mvd"
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+container:
+  port: 5000

@@ -1,0 +1,8 @@
+project: smev-processing
+configVersion: 1
+deploy:
+  helmRelease: request-sim-card-validity-consumer
+  namespace: smev-processing-[[ env ]]
+---
+image: request-sim-card-validity-consumer
+dockerfile: ./Dockerfile

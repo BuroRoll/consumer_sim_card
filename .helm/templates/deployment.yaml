@@ -1,0 +1,55 @@
+{{- $vp := pluck $.Values.global.env .Values.vault.path | first | default .Values.vault.path._default }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: {{pluck $.Values.global.env .Values.vault.role | first | default .Values.vault.role._default}}
+        vault.hashicorp.com/agent-inject-secret-config: {{ $vp }}
+        vault.hashicorp.com/agent-inject-template-config: |
+                      {{ printf `{{- with secret "%s" -}}
+                        {{- range $secretKey, $secretValue := .Data.data }}
+                        export {{ $secretKey }}={{ $secretValue }}
+                        {{- end }}
+                      {{- end }}` $vp }}
+    spec:
+      imagePullSecrets:
+        - name: "registrysecret"
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ index .Values.werf.image .Release.Name }}
+        args:
+          [ '/bin/bash', '-c', 'source /vault/secrets/config && exec faust -A request_sim_validity_consumer.app worker' ]
+        # workingDir: /
+        # command: ["/main"]
+        env:
+            {{- range $name, $value := .Values.envs }}
+            - name: {{ $name }}
+              value: {{ pluck $.Values.global.env $value | first | default $value._default | quote }}
+            {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{pluck $.Values.global.env .Values.envs.WEB_PORT | first | default .Values.envs.WEB_PORT._default}}
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        resources:
+            {{- with .Values.resources }}
+        resources:
+{{ toYaml . | indent 10 }}
+            {{- end }}
